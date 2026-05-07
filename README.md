@@ -61,5 +61,4 @@ sudo ufw allow 3000
 
 ```
 ## Author: Riad Nageh
-# Ctrl+X, Y, Enter
 
