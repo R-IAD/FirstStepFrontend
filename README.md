@@ -1,5 +1,3 @@
-README.md (Summarized Version)
-markdown
 
 # My First API Project 🚀
 
@@ -83,4 +81,3 @@ nano README.md
 # Paste the content above
 # Ctrl+X, Y, Enter
 
-That's it! Short, simple, and covers everything needed to run your project. ✅
