@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My API Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            background: #764ba2;
+            transform: scale(1.02);
+        }
+        
+        .data-item {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .response {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .response.show {
+            display: block;
+        }
+        
+        .success {
+            color: #4caf50;
+            font-weight: bold;
+        }
+        
+        .error {
+            color: #f44336;
+            font-weight: bold;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .stats {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        
+        .nav {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .nav a {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+        
+        .nav a:hover {
+            color: #764ba2;
+        }
+        
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 My API Dashboard</h1>
+        
+        <div class="nav">
+            <a href="/">🏠 Home</a>
+            <a href="/api/hello" target="_blank">🔧 Test API</a>
+            <a href="/api/data" target="_blank">📊 View JSON</a>
+        </div>
+        
+        <!-- Send Data Card -->
+        <div class="card">
+            <h2>📤 Send POST Request</h2>
+            <input type="text" id="name" placeholder="Your Name" />
+            <input type="email" id="email" placeholder="Your Email" />
+            <textarea id="message" placeholder="Your Message"></textarea>
+            <button onclick="sendData()">Send to API</button>
+            <div id="postResponse" class="response"></div>
+        </div>
+        
+        <!-- View Data Card -->
+        <div class="card">
+            <h2>📥 Saved Data <span id="dataCount" class="stats">0</span></h2>
+            <button onclick="fetchData()">🔄 Refresh Data</button>
+            <div id="dataList">
+                <div class="loading">Click refresh to load data...</div>
+            </div>
+        </div>
+        
+        <!-- Quick Test Card -->
+        <div class="card">
+            <h2>🔧 Quick Test Endpoint</h2>
+            <button onclick="testEndpoint()">Test /api/hello</button>
+            <div id="testResponse" class="response"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Auto-detect API URL (use same host as page)
+        const API_BASE = '';
+        
+        async function sendData() {
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const message = document.getElementById('message').value;
+            
+            if (!name || !email || !message) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            const responseDiv = document.getElementById('postResponse');
+            const btn = event.target;
+            
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            
+            try {
+                const response = await fetch('/api/data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, email, message, timestamp: new Date() })
+                });
+                
+                const data = await response.json();
+                
+                responseDiv.innerHTML = `
+                    <div class="success">✅ Success! Data saved.</div>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                responseDiv.classList.add('show');
+                
+                // Clear form
+                document.getElementById('name').value = '';
+                document.getElementById('email').value = '';
+                document.getElementById('message').value = '';
+                
+                // Refresh data list
+                fetchData();
+                
+            } catch (error) {
+                responseDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                responseDiv.classList.add('show');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Send to API';
+                setTimeout(() => responseDiv.classList.remove('show'), 3000);
+            }
+        }
+        
+        async function fetchData() {
+            const dataList = document.getElementById('dataList');
+            const dataCount = document.getElementById('dataCount');
+            
+            dataList.innerHTML = '<div class="loading">Loading...</div>';
+            
+            try {
+                const response = await fetch('/api/data');
+                const data = await response.json();
+                
+                dataCount.textContent = data.count;
+                
+                if (data.count === 0) {
+                    dataList.innerHTML = '<div class="loading">No data yet. Send some POST requests!</div>';
+                    return;
+                }
+                
+                dataList.innerHTML = data.data.map((item, index) => `
+                    <div class="data-item">
+                        <strong>#${index + 1}</strong><br/>
+                        📛 Name: ${item.name}<br/>
+                        📧 Email: ${item.email}<br/>
+                        💬 Message: ${item.message}<br/>
+                        ⏰ Time: ${new Date(item.timestamp || Date.now()).toLocaleString()}
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                dataList.innerHTML = `<div class="error">❌ Error loading data: ${error.message}</div>`;
+            }
+        }
+        
+        async function testEndpoint() {
+            const responseDiv = document.getElementById('testResponse');
+            responseDiv.innerHTML = '<div class="loading">Testing...</div>';
+            responseDiv.classList.add('show');
+            
+            try {
+                const response = await fetch('/api/hello');
+                const data = await response.json();
+                
+                responseDiv.innerHTML = `
+                    <div class="success">✅ Connection Successful!</div>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+                setTimeout(() => responseDiv.classList.remove('show'), 3000);
+            } catch (error) {
+                responseDiv.innerHTML = `<div class="error">❌ Connection failed: ${error.message}</div>`;
+            }
+        }
+        
+        // Auto load data on page load
+        fetchData();
+    </script>
+</body>
+</html>
